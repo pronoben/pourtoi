@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Une lettre pour toi 💌</title>
+<style>
+:root{--bg:#fff1f3;--card:#fffaf5;--ink:#4a2330;--soft:#9a6070;--accent:#e0446a;--accent2:#fbd3dc;--line:#f0c9d2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a1219;--card:#3a1b25;--ink:#fde8ed;--soft:#d9a0b0;--accent:#ff6b8f;--accent2:#5a2a38;--line:#6a3445}}
+:root[data-theme="dark"]{--bg:#2a1219;--card:#3a1b25;--ink:#fde8ed;--soft:#d9a0b0;--accent:#ff6b8f;--accent2:#5a2a38;--line:#6a3445}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;display:flex;align-items:center;justify-content:center;padding:16px;overflow-x:hidden}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px 26px;max-width:460px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(224,68,106,.18);position:relative}
+.hidden{display:none}
+.emoji{font-size:48px;margin-bottom:6px}
+h1{font-size:26px;margin:6px 0 14px;line-height:1.25}
+p{font-size:17px;line-height:1.6;color:var(--soft);margin:0 0 22px}
+.sign{font-style:italic;color:var(--ink)}
+.btns{display:flex;gap:14px;justify-content:center;align-items:center;min-height:64px}
+button{font-family:inherit;font-size:18px;border:0;border-radius:999px;padding:13px 28px;cursor:pointer;transition:transform .15s}
+button:active{transform:scale(.96)}
+.yes{background:var(--accent);color:#fff;font-weight:bold}
+.no{background:var(--accent2);color:var(--ink)}
+.no.run{position:fixed;z-index:10;transition:left .25s,top .25s}
+.days{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 18px}
+.day{background:var(--accent2);color:var(--ink);font-size:16px;padding:12px;border:2px solid transparent}
+.day.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.day:last-child{grid-column:span 2}
+.msg{min-height:22px;font-size:14px;color:var(--soft);margin-top:10px}
+.heart{position:fixed;top:-30px;font-size:22px;animation:fall 3.5s linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(40deg);opacity:.7}}
+</style>
+</head>
+<body>
+
+<div class="card" id="p1">
+  <div class="emoji">💌</div>
+  <h1 id="hello">Coucou</h1>
+  <p>Il y a des personnes qui te font sourire sans même essayer, et pour moi, c'est toi. J'adore chaque moment passé avec toi et j'ai envie qu'il y en ait beaucoup d'autres.</p>
+  <h1>Veux-tu sortir avec moi ? 🥺</h1>
+  <p class="sign" id="from">Avec tout mon cœur</p>
+  <div class="btns" id="btns">
+    <button class="yes" id="yes">Oui 💖</button>
+    <button class="no" id="no">Non</button>
+  </div>
+  <div class="msg" id="msg"></div>
+</div>
+
+<div class="card hidden" id="p2">
+  <div class="emoji">🥰</div>
+  <h1>Tu as dit oui, je suis trop heureux !</h1>
+  <p>Alors dis-moi, quand est-ce qu'on pourrait se voir ? Choisis un ou plusieurs jours :</p>
+  <div class="days" id="days"></div>
+  <button class="yes" id="send">Envoyer ma réponse 💌</button>
+  <div class="msg" id="msg2"></div>
+</div>
+
+<div class="card hidden" id="p3">
+  <div class="emoji">💞</div>
+  <h1>Merci, tu me rends si heureux !</h1>
+  <p>Ta réponse est partie. Je retiens : <strong id="recap"></strong></p>
+  <p>J'ai déjà hâte de passer du temps avec toi. À très vite 💖</p>
+  <p class="sign" id="from3"></p>
+</div>
+
+<script>
+var q = new URLSearchParams(location.search);
+var to = q.get('to'), from = q.get('from') || 'Benjamin';
+if (to) document.getElementById('hello').textContent = 'Coucou ' + to + ' 💕';
+if (from) document.getElementById('from').textContent = 'Avec tout mon cœur, ' + from;
+
+var no = document.getElementById('no'), yes = document.getElementById('yes'), msg = document.getElementById('msg');
+var phrases = ['Tu es sûr(e) ? 🥺','Réfléchis encore…','Essaie encore 😏','Le bouton Oui est plus joli 💖','Allez, un petit effort !','Impossible d\'appuyer sur Non 😄'];
+var tries = 0, scale = 1;
+
+function flee(e){
+  if (e) e.preventDefault();
+  tries++;
+  no.classList.add('run');
+  var w = window.innerWidth, h = window.innerHeight;
+  var bw = no.offsetWidth, bh = no.offsetHeight;
+  no.style.left = Math.max(8, Math.random() * (w - bw - 16)) + 'px';
+  no.style.top = Math.max(8, Math.random() * (h - bh - 16)) + 'px';
+  msg.textContent = phrases[Math.min(tries - 1, phrases.length - 1)];
+  scale = Math.min(1.8, scale + 0.1);
+  yes.style.transform = 'scale(' + scale + ')';
+}
+no.addEventListener('mouseenter', flee);
+no.addEventListener('touchstart', flee, {passive:false});
+no.addEventListener('click', flee);
+
+function hearts(){
+  for (var i = 0; i < 30; i++){
+    var s = document.createElement('span');
+    s.className = 'heart';
+    s.textContent = ['💖','💕','❤️','💗'][i % 4];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.animationDelay = Math.random() * 1.5 + 's';
+    document.body.appendChild(s);
+    setTimeout(function(el){ el.remove(); }.bind(null, s), 5500);
+  }
+}
+
+yes.addEventListener('click', function(){
+  no.classList.add('hidden');
+  document.getElementById('p1').classList.add('hidden');
+  document.getElementById('p2').classList.remove('hidden');
+  hearts();
+});
+
+var jours = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+var chosen = {};
+var box = document.getElementById('days');
+jours.forEach(function(j){
+  var b = document.createElement('button');
+  b.className = 'day'; b.textContent = j;
+  b.addEventListener('click', function(){
+    chosen[j] = !chosen[j];
+    b.classList.toggle('on', chosen[j]);
+  });
+  box.appendChild(b);
+});
+
+document.getElementById('send').addEventListener('click', function(){
+  var list = jours.filter(function(j){ return chosen[j]; });
+  var m2 = document.getElementById('msg2');
+  if (!list.length){ m2.textContent = 'Choisis au moins un jour 😊'; return; }
+  var text = 'Oui, je veux bien sortir avec toi 💖 On peut se voir : ' + list.join(', ') + '.';
+  try { navigator.clipboard.writeText(text); } catch(e){}
+  document.getElementById('recap').textContent = list.join(', ');
+  document.getElementById('from3').textContent = '— ' + from;
+  document.getElementById('p2').classList.add('hidden');
+  document.getElementById('p3').classList.remove('hidden');
+  hearts();
+  setTimeout(function(){
+    if (navigator.share){
+      navigator.share({text: text}).catch(function(){});
+    } else {
+      location.href = 'sms:?&body=' + encodeURIComponent(text);
+    }
+  }, 600);
+});
+</script>
+</body>
+</html>
